@@ -1891,6 +1891,9 @@ endif
 				; The stack is also cleared.
 	;ret
 
+ConditionalTable:
+db #$01,#$02,#$04,#$08,#$10,#$20,#$40,#$80
+
 ProcessAPU1Input:				; Input from SMW $1DFA
 	mov	a, $01
 if !noSFX = !false
@@ -1905,7 +1908,6 @@ endif
 endif
 	cmp	a, #$ff
 	beq	L_099C
-	cmp a, #$
 if !noSFX = !true
 	cmp	a, #$08			; 08 unpauses music
 	beq	UnpauseMusic
@@ -1920,13 +1922,13 @@ if !noSFX = !true
 endif
 	push a
 	cmp a, #$80
-	bpl SkipConditional
+	bpl ..SkipConditional
 	setc
 	sbc a, #$80
 	mov x, a
-	mov a, (ConditionalTable+x)
-	and !Flag, a
-SkipConditional:
+	mov a, ConditionalTable+x
+	and a, !Flag
+..SkipConditional:
 	pop a 
 if !noSFX = !false
 	cmp	a, #((APU1CMDJumpArrayEOF-APU1CMDJumpArray)/2)+1
@@ -1943,9 +1945,6 @@ endif
 	mov	x, a
 	lsr	a
 	jmp	(APU1CMDJumpArray-2+x)
-
-ConditionalTable:
-db #$01,#$02,#$04,#$08,#$10,#$20,#$40,#$80
 
 PlayPauseSFX:
 	mov	a, #$11
